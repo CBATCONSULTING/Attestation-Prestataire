@@ -517,8 +517,7 @@
 
             <div style="margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
               <button type="submit" class="primary-btn" id="sendEmailBtn">Envoyer l'attestation signée</button>
-              <span class="note">L'envoi se fait directement par email une fois le formulaire complété.</span>
-            </div>
+                          </div>
 
             <p class="footer-text">La présente attestation est établie pour servir et valoir ce que de droit.</p>
             <p class="status" id="statusMsg"></p>
@@ -535,10 +534,6 @@
     const EMAILJS_SERVICE_ID = 'service_q3mws6l';
     const EMAILJS_TEMPLATE_ID = 'template_ofcg3fo';
 
-    emailjs.init({
-      publicKey: EMAILJS_PUBLIC_KEY,
-    });
-
     const form = document.getElementById('attestationForm');
     const statusMsg = document.getElementById('statusMsg');
     const employeesSection = document.getElementById('employeesSection');
@@ -547,6 +542,15 @@
     const radios = Array.from(document.querySelectorAll('input[name="salariesEtrangers"]'));
     const dateInput = document.getElementById('dateSignature');
     const sendEmailBtn = document.getElementById('sendEmailBtn');
+    const signatureCanvas = document.getElementById('signatureCanvas');
+    const clearSignatureBtn = document.getElementById('clearSignatureBtn');
+    const ctx = signatureCanvas.getContext('2d');
+
+    let emailJsReady = false;
+    let drawing = false;
+    let hasDrawnSignature = false;
+    let lastX = 0;
+    let lastY = 0;
 
     if (!dateInput.value) {
       const today = new Date();
@@ -560,6 +564,19 @@
       statusMsg.textContent = message || '';
       statusMsg.className = 'status';
       if (type) statusMsg.classList.add(type);
+    }
+
+    function initEmailJs() {
+      try {
+        if (!window.emailjs || typeof window.emailjs.init !== 'function') {
+          console.warn('EmailJS non chargé.');
+          return;
+        }
+        window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+        emailJsReady = true;
+      } catch (error) {
+        console.error('Erreur EmailJS :', error);
+      }
     }
 
     function toggleEmployeesSection() {
@@ -622,10 +639,7 @@
     }
 
     function hasSignature() {
-      const empty = document.createElement('canvas');
-      empty.width = signatureCanvas.width;
-      empty.height = signatureCanvas.height;
-      return signatureCanvas.toDataURL('image/png') !== empty.toDataURL('image/png');
+      return hasDrawnSignature;
     }
 
     function buildEmployeesHtml(employees) {
@@ -682,49 +696,50 @@
       };
     }
 
-    addEmployeeBtn.addEventListener('click', () => addEmployeeRow());
-    radios.forEach(r => r.addEventListener('change', toggleEmployeesSection));
-    toggleEmployeesSection();
-
-    const signatureCanvas = document.getElementById('signatureCanvas');
-    const clearSignatureBtn = document.getElementById('clearSignatureBtn');
-    const ctx = signatureCanvas.getContext('2d');
-    let drawing = false;
-    let lastX = 0;
-    let lastY = 0;
-
-    function resizeCanvas() {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      const oldData = signatureCanvas.toDataURL('image/png');
-      signatureCanvas.width = signatureCanvas.offsetWidth * ratio;
-      signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    function configureContext() {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.strokeStyle = '#111827';
       ctx.lineWidth = 2.2;
+    }
 
-      if (oldData && oldData !== 'data:,') {
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const oldData = hasDrawnSignature ? signatureCanvas.toDataURL('image/png') : '';
+      const cssWidth = signatureCanvas.offsetWidth || 300;
+      const cssHeight = signatureCanvas.offsetHeight || 220;
+
+      signatureCanvas.width = Math.floor(cssWidth * ratio);
+      signatureCanvas.height = Math.floor(cssHeight * ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      configureContext();
+
+      if (oldData) {
         const img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0, signatureCanvas.offsetWidth, signatureCanvas.offsetHeight);
+        img.onload = () => ctx.drawImage(img, 0, 0, cssWidth, cssHeight);
         img.src = oldData;
       }
     }
 
     function getPos(event) {
       const rect = signatureCanvas.getBoundingClientRect();
-      const point = event.touches ? event.touches[0] : event;
       return {
-        x: point.clientX - rect.left,
-        y: point.clientY - rect.top
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
       };
     }
 
     function startDrawing(event) {
+      event.preventDefault();
       drawing = true;
+      if (typeof signatureCanvas.setPointerCapture === 'function' && event.pointerId != null) {
+        try { signatureCanvas.setPointerCapture(event.pointerId); } catch (_) {}
+      }
       const pos = getPos(event);
       lastX = pos.x;
       lastY = pos.y;
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
     }
 
     function draw(event) {
@@ -737,27 +752,36 @@
       ctx.stroke();
       lastX = pos.x;
       lastY = pos.y;
+      hasDrawnSignature = true;
     }
 
-    function stopDrawing() {
+    function stopDrawing(event) {
       drawing = false;
+      if (event && typeof signatureCanvas.releasePointerCapture === 'function' && event.pointerId != null) {
+        try { signatureCanvas.releasePointerCapture(event.pointerId); } catch (_) {}
+      }
     }
 
     function clearSignature() {
       ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      configureContext();
+      hasDrawnSignature = false;
       setStatus('Signature effacée.');
     }
 
-    signatureCanvas.addEventListener('mousedown', startDrawing);
-    signatureCanvas.addEventListener('mousemove', draw);
-    signatureCanvas.addEventListener('mouseup', stopDrawing);
-    signatureCanvas.addEventListener('mouseleave', stopDrawing);
-    signatureCanvas.addEventListener('touchstart', startDrawing, { passive: false });
-    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
-    signatureCanvas.addEventListener('touchend', stopDrawing);
+    addEmployeeBtn.addEventListener('click', () => addEmployeeRow());
+    radios.forEach(r => r.addEventListener('change', toggleEmployeesSection));
+    toggleEmployeesSection();
+
+    signatureCanvas.addEventListener('pointerdown', startDrawing);
+    signatureCanvas.addEventListener('pointermove', draw);
+    signatureCanvas.addEventListener('pointerup', stopDrawing);
+    signatureCanvas.addEventListener('pointerleave', stopDrawing);
+    signatureCanvas.addEventListener('pointercancel', stopDrawing);
     clearSignatureBtn.addEventListener('click', clearSignature);
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+    initEmailJs();
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -767,7 +791,12 @@
       }
 
       if (!hasSignature()) {
-        setStatus('Merci de signer dans le cadre avant l'envoi.', 'error');
+        setStatus('Merci de signer dans le cadre avant l\'envoi.', 'error');
+        return;
+      }
+
+      if (!emailJsReady) {
+        setStatus('EmailJS ne s\'est pas chargé correctement. Vérifie la connexion internet puis recharge la page.', 'error');
         return;
       }
 
@@ -776,7 +805,7 @@
       setStatus('Envoi en cours...', 'sending');
 
       try {
-        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
         setStatus('Attestation envoyée avec succès.', 'success');
       } catch (error) {
         console.error(error);
