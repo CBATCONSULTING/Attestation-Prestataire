@@ -1,1 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attestation sur l'honneur du prestataire</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --line: #d9dfeb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #0f766e;
+      --accent-dark: #115e59;
+      --danger: #b91c1c;
+      --shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(30, 64, 175, 0.05), transparent 30%),
+        var(--bg);
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 1020px;
+      margin: 32px auto;
+      padding: 0 18px 36px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(217, 223, 235, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 30px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(15,118,110,0.06), rgba(255,255,255,0));
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .body {
+      padding: 28px 30px 32px;
+    }
+
+    button,
+    .secondary-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover,
+    .secondary-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.22);
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary-btn {
+      background: #eef2f7;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .danger-btn {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .section {
+      margin-bottom: 28px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .section h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 12px;
+      border: 1px solid #cfd8e3;
+      background: #fff;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(15, 118, 110, 0.65);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.10);
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .declaration-list {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .declaration-list li {
+      margin-bottom: 12px;
+    }
+
+    .choice-group {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .choice-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fafbfd;
+    }
+
+    .choice-card input[type="radio"] {
+      width: auto;
+      margin-top: 2px;
+      transform: scale(1.15);
+    }
+
+    .choice-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #e5eaf2;
+      padding: 12px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f8fafc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #4b5563;
+    }
+
+    td input {
+      min-width: 120px;
+    }
+
+    .small-btn {
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 10px;
+      background: #eef2f7;
+      color: var(--text);
+      border: none;
+      cursor: pointer;
+    }
+
+    .small-btn.remove {
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .signature-box {
+      border: 1px dashed #9ca3af;
+      border-radius: 16px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .signature-canvas {
+      display: block;
+      width: 100%;
+      height: 220px;
+      border-radius: 12px;
+      background:
+        linear-gradient(to bottom, transparent 97%, rgba(156,163,175,0.25) 97%) 0 0 / 100% 34px,
+        #fff;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .signature-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-text {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--accent-dark);
+      font-weight: 700;
+      min-height: 18px;
+    }
+
+    .status.success { color: #0f766e; }
+    .status.error { color: #b91c1c; }
+    .status.sending { color: #1d4ed8; }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .print-only {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      .header,
+      .body {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .grid,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+      }
+
+      .signature-actions,
+      .note,
+      .status {
+        display: none !important;
+      }
+
+      .section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      input,
+      textarea,
+      select {
+        border: 1px solid #cfd8e3;
+        background: #fff;
+        color: #000;
+      }
+
+      .print-only {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <div class="header">
+        <div class="eyebrow">Document à remplir et signer en ligne</div>
+        <h1>Attestation sur l'honneur du prestataire</h1>
+        <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
+      </div>
+
+      <div class="body">
+        <form id="attestationForm">
+          <section class="section">
+            <h2>1. Identité du signataire</h2>
+            <div class="grid">
+              <div class="field">
+                <label for="nomPrenom">Nom / Prénom</label>
+                <input id="nomPrenom" name="nomPrenom" type="text" placeholder="Nom et prénom du signataire" required />
+              </div>
+              <div class="field">
+                <label for="fonction">Fonction</label>
+                <input id="fonction" name="fonction" type="text" placeholder="Ex. Gérant, Président, Directeur" required />
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>2. Entreprise représentée</h2>
+            <div class="grid">
+              <div class="field">
+                <label for="raisonSociale">Raison sociale</label>
+                <input id="raisonSociale" name="raisonSociale" type="text" placeholder="Nom de la société" required />
+              </div>
+              <div class="field">
+                <label for="siret">SIRET</label>
+                <input id="siret" name="siret" type="text" inputmode="numeric" placeholder="14 chiffres" />
+              </div>
+              <div class="field full">
+                <label for="adresse">Adresse</label>
+                <textarea id="adresse" name="adresse" placeholder="Adresse complète de l'entreprise" required></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>3. Déclarations sur l'honneur</h2>
+            <p>Le signataire atteste sur l'honneur que l'entreprise :</p>
+            <ol class="declaration-list">
+              <li>Est régulièrement immatriculée et exerce son activité conformément à la législation en vigueur.</li>
+              <li>Ne recourt pas au travail dissimulé au sens des articles L8221-1 et suivants du Code du travail.</li>
+              <li>Respecte les obligations relatives à l'emploi de travailleurs étrangers prévues par les articles L8251-1 et suivants du Code du travail.</li>
+              <li>Est à jour de ses obligations sociales auprès des organismes de recouvrement et s'engage à fournir l'attestation de vigilance délivrée par l'URSSAF.</li>
+              <li>Respecte les dispositions légales relatives au droit du travail, à la santé et à la sécurité des salariés.</li>
+              <li>Ne recourt pas au travail des enfants en violation de la législation applicable.</li>
+            </ol>
+          </section>
+
+          <section class="section">
+            <h2>4. Salariés étrangers soumis à autorisation de travail</h2>
+            <div class="choice-group">
+              <label class="choice-card">
+                <input type="radio" name="salariesEtrangers" value="non" checked />
+                <span>
+                  <strong>L'entreprise n'emploie pas de salariés étrangers soumis à autorisation de travail.</strong>
+                  Aucun tableau complémentaire n'est alors requis.
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="salariesEtrangers" value="oui" />
+                <span>
+                  <strong>L'entreprise emploie des salariés étrangers soumis à autorisation de travail.</strong>
+                  Merci de compléter la liste ci-dessous.
+                </span>
+              </label>
+            </div>
+
+            <div id="employeesSection" class="hidden">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Prénom</th>
+                      <th>Nationalité</th>
+                      <th>Type de titre autorisant le travail</th>
+                      <th>N° du titre</th>
+                      <th style="width: 90px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="employeesBody"></tbody>
+                </table>
+              </div>
+              <div style="margin-top: 12px;">
+                <button type="button" class="small-btn" id="addEmployeeBtn">+ Ajouter une ligne</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2>5. Finalisation</h2>
+            <div class="grid-3">
+              <div class="field">
+                <label for="faitA">Fait à</label>
+                <input id="faitA" name="faitA" type="text" placeholder="Ville" required />
+              </div>
+              <div class="field">
+                <label for="dateSignature">Le</label>
+                <input id="dateSignature" name="dateSignature" type="date" required />
+              </div>
+              <div class="field">
+                <label for="nomQualite">Nom et qualité du signataire</label>
+                <input id="nomQualite" name="nomQualite" type="text" placeholder="Nom + qualité" required />
+              </div>
+            </div>
+
+            <div class="field" style="margin-top: 18px;">
+              <label>Signature manuscrite</label>
+              <div class="signature-box">
+                <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+                <div class="signature-actions">
+                  <span class="note">Signez à la souris ou au doigt directement dans le cadre ci-dessus.</span>
+                  <button type="button" class="small-btn remove" id="clearSignatureBtn">Effacer la signature</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+              <button type="submit" class="primary-btn" id="sendEmailBtn">Envoyer l'attestation signée</button>
+              <span class="note">L'envoi se fait directement par email une fois le formulaire complété.</span>
+            </div>
+
+            <p class="footer-text">La présente attestation est établie pour servir et valoir ce que de droit.</p>
+            <p class="status" id="statusMsg"></p>
+          </section>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    // Identifiants EmailJS
+    const EMAILJS_PUBLIC_KEY = '42fcs_J7GqnWNi7BU';
+    const EMAILJS_SERVICE_ID = 'service_q3mws6l';
+    const EMAILJS_TEMPLATE_ID = 'template_ofcg3fo';
+
+    emailjs.init({
+      publicKey: EMAILJS_PUBLIC_KEY,
+    });
+
+    const form = document.getElementById('attestationForm');
+    const statusMsg = document.getElementById('statusMsg');
+    const employeesSection = document.getElementById('employeesSection');
+    const employeesBody = document.getElementById('employeesBody');
+    const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+    const radios = Array.from(document.querySelectorAll('input[name="salariesEtrangers"]'));
+    const dateInput = document.getElementById('dateSignature');
+    const sendEmailBtn = document.getElementById('sendEmailBtn');
+
+    if (!dateInput.value) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function setStatus(message, type = '') {
+      statusMsg.textContent = message || '';
+      statusMsg.className = 'status';
+      if (type) statusMsg.classList.add(type);
+    }
+
+    function toggleEmployeesSection() {
+      const selected = document.querySelector('input[name="salariesEtrangers"]:checked')?.value;
+      const show = selected === 'oui';
+      employeesSection.classList.toggle('hidden', !show);
+      if (show && employeesBody.children.length === 0) {
+        addEmployeeRow();
+      }
+    }
+
+    function addEmployeeRow(data = {}) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><input type="text" name="employee_nom" value="${escapeHtml(data.nom || '')}" placeholder="Nom" /></td>
+        <td><input type="text" name="employee_prenom" value="${escapeHtml(data.prenom || '')}" placeholder="Prénom" /></td>
+        <td><input type="text" name="employee_nationalite" value="${escapeHtml(data.nationalite || '')}" placeholder="Nationalité" /></td>
+        <td><input type="text" name="employee_titre" value="${escapeHtml(data.titre || '')}" placeholder="Type de titre" /></td>
+        <td><input type="text" name="employee_numero" value="${escapeHtml(data.numero || '')}" placeholder="Numéro" /></td>
+        <td><button type="button" class="small-btn remove">Supprimer</button></td>
+      `;
+      row.querySelector('.remove').addEventListener('click', () => {
+        row.remove();
+        setStatus('Ligne supprimée.');
+      });
+      employeesBody.appendChild(row);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function nl2br(value) {
+      return escapeHtml(value).replace(/\n/g, '<br>');
+    }
+
+    function getEmployeesData() {
+      return Array.from(employeesBody.querySelectorAll('tr')).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+          nom: inputs[0]?.value.trim() || '',
+          prenom: inputs[1]?.value.trim() || '',
+          nationalite: inputs[2]?.value.trim() || '',
+          titre: inputs[3]?.value.trim() || '',
+          numero: inputs[4]?.value.trim() || ''
+        };
+      }).filter(item => Object.values(item).some(Boolean));
+    }
+
+    function formatDateFr(value) {
+      if (!value) return '';
+      const [y, m, d] = value.split('-');
+      if (!y || !m || !d) return value;
+      return `${d}/${m}/${y}`;
+    }
+
+    function hasSignature() {
+      const empty = document.createElement('canvas');
+      empty.width = signatureCanvas.width;
+      empty.height = signatureCanvas.height;
+      return signatureCanvas.toDataURL('image/png') !== empty.toDataURL('image/png');
+    }
+
+    function buildEmployeesHtml(employees) {
+      if (!employees.length) {
+        return '<p style="margin:0;">Aucun salarié étranger soumis à autorisation de travail déclaré.</p>';
+      }
+
+      const rows = employees.map(emp => `
+        <tr>
+          <td style="border:1px solid #d9dfeb;padding:8px;">${escapeHtml(emp.nom)}</td>
+          <td style="border:1px solid #d9dfeb;padding:8px;">${escapeHtml(emp.prenom)}</td>
+          <td style="border:1px solid #d9dfeb;padding:8px;">${escapeHtml(emp.nationalite)}</td>
+          <td style="border:1px solid #d9dfeb;padding:8px;">${escapeHtml(emp.titre)}</td>
+          <td style="border:1px solid #d9dfeb;padding:8px;">${escapeHtml(emp.numero)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+          <thead>
+            <tr>
+              <th style="border:1px solid #d9dfeb;padding:8px;background:#f8fafc;text-align:left;">Nom</th>
+              <th style="border:1px solid #d9dfeb;padding:8px;background:#f8fafc;text-align:left;">Prénom</th>
+              <th style="border:1px solid #d9dfeb;padding:8px;background:#f8fafc;text-align:left;">Nationalité</th>
+              <th style="border:1px solid #d9dfeb;padding:8px;background:#f8fafc;text-align:left;">Type de titre</th>
+              <th style="border:1px solid #d9dfeb;padding:8px;background:#f8fafc;text-align:left;">N° du titre</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function getTemplateParams() {
+      const fd = new FormData(form);
+      const salariesEtrangers = fd.get('salariesEtrangers') || 'non';
+      const employees = getEmployeesData();
+      return {
+        nomPrenom: (fd.get('nomPrenom') || '').trim(),
+        fonction: (fd.get('fonction') || '').trim(),
+        raisonSociale: (fd.get('raisonSociale') || '').trim(),
+        siret: (fd.get('siret') || '').trim(),
+        adresse: (fd.get('adresse') || '').trim(),
+        adresseHtml: nl2br((fd.get('adresse') || '').trim()),
+        salariesEtrangers: salariesEtrangers,
+        salariesEtrangersTexte: salariesEtrangers === 'oui'
+          ? "L'entreprise emploie des salariés étrangers soumis à autorisation de travail."
+          : "L'entreprise n'emploie pas de salariés étrangers soumis à autorisation de travail.",
+        employeesHtml: buildEmployeesHtml(employees),
+        faitA: (fd.get('faitA') || '').trim(),
+        dateSignature: formatDateFr(fd.get('dateSignature') || ''),
+        nomQualite: (fd.get('nomQualite') || '').trim(),
+        signature_image: signatureCanvas.toDataURL('image/png')
+      };
+    }
+
+    addEmployeeBtn.addEventListener('click', () => addEmployeeRow());
+    radios.forEach(r => r.addEventListener('change', toggleEmployeesSection));
+    toggleEmployeesSection();
+
+    const signatureCanvas = document.getElementById('signatureCanvas');
+    const clearSignatureBtn = document.getElementById('clearSignatureBtn');
+    const ctx = signatureCanvas.getContext('2d');
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function resizeCanvas() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const oldData = signatureCanvas.toDataURL('image/png');
+      signatureCanvas.width = signatureCanvas.offsetWidth * ratio;
+      signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 2.2;
+
+      if (oldData && oldData !== 'data:,') {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0, signatureCanvas.offsetWidth, signatureCanvas.offsetHeight);
+        img.src = oldData;
+      }
+    }
+
+    function getPos(event) {
+      const rect = signatureCanvas.getBoundingClientRect();
+      const point = event.touches ? event.touches[0] : event;
+      return {
+        x: point.clientX - rect.left,
+        y: point.clientY - rect.top
+      };
+    }
+
+    function startDrawing(event) {
+      drawing = true;
+      const pos = getPos(event);
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    function draw(event) {
+      if (!drawing) return;
+      event.preventDefault();
+      const pos = getPos(event);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+    }
+
+    function stopDrawing() {
+      drawing = false;
+    }
+
+    function clearSignature() {
+      ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      setStatus('Signature effacée.');
+    }
+
+    signatureCanvas.addEventListener('mousedown', startDrawing);
+    signatureCanvas.addEventListener('mousemove', draw);
+    signatureCanvas.addEventListener('mouseup', stopDrawing);
+    signatureCanvas.addEventListener('mouseleave', stopDrawing);
+    signatureCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+    signatureCanvas.addEventListener('touchmove', draw, { passive: false });
+    signatureCanvas.addEventListener('touchend', stopDrawing);
+    clearSignatureBtn.addEventListener('click', clearSignature);
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      if (!hasSignature()) {
+        setStatus('Merci de signer dans le cadre avant l'envoi.', 'error');
+        return;
+      }
+
+      const params = getTemplateParams();
+      sendEmailBtn.disabled = true;
+      setStatus('Envoi en cours...', 'sending');
+
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        setStatus('Attestation envoyée avec succès.', 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(`Échec de l'envoi : ${error?.text || error?.message || 'erreur inconnue'}`, 'error');
+      } finally {
+        sendEmailBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
