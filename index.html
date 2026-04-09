@@ -517,7 +517,7 @@
   <div class="page">
     <div class="card">
       <div class="header">
-        <div class="eyebrow">Document à remplir et signer en ligne V11.0</div>
+        <div class="eyebrow">Document à remplir et signer en ligne V12.0</div>
         <h1>Attestation sur l'honneur du prestataire</h1>
         <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
       </div>
@@ -710,13 +710,24 @@
       }
     }
 
+    function employeesAreRequired() {
+      return document.querySelector('input[name="salariesEtrangers"]:checked')?.value === 'oui';
+    }
+
+    function updateEmployeeInputsRequired() {
+      const required = employeesAreRequired();
+      employeesBody.querySelectorAll('input').forEach(input => {
+        input.required = required;
+      });
+    }
+
     function toggleEmployeesSection() {
-      const selected = document.querySelector('input[name="salariesEtrangers"]:checked')?.value;
-      const show = selected === 'oui';
+      const show = employeesAreRequired();
       employeesSection.classList.toggle('hidden', !show);
       if (show && employeesBody.children.length === 0) {
         addEmployeeRow();
       }
+      updateEmployeeInputsRequired();
     }
 
     function addEmployeeRow(data = {}) {
@@ -731,9 +742,27 @@
       `;
       row.querySelector('.remove').addEventListener('click', () => {
         row.remove();
+        updateEmployeeInputsRequired();
         setStatus('Ligne supprimée.');
       });
       employeesBody.appendChild(row);
+      updateEmployeeInputsRequired();
+    }
+
+    function validateEmployeesSection() {
+      if (!employeesAreRequired()) {
+        return true;
+      }
+
+      const rows = Array.from(employeesBody.querySelectorAll('tr'));
+      if (!rows.length) {
+        setStatus('Merci d'ajouter au moins un salarié étranger déclaré.', 'error');
+        addEmployeeRow();
+        return false;
+      }
+
+      updateEmployeeInputsRequired();
+      return true;
     }
 
     function escapeHtml(value) {
@@ -1266,6 +1295,10 @@
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+
+      if (!validateEmployeesSection()) {
+        return;
+      }
 
       if (!form.reportValidity()) {
         return;
