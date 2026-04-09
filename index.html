@@ -498,7 +498,7 @@
   <div class="page">
     <div class="card">
       <div class="header">
-        <div class="eyebrow">Document à remplir et signer en ligne V3.0</div>
+        <div class="eyebrow">Document à remplir et signer en ligne V4.0</div>
         <h1>Attestation sur l'honneur du prestataire</h1>
         <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
       </div>
@@ -933,16 +933,41 @@
       const printableWidth = pageWidth - (margin * 2);
       const printableHeight = pageHeight - (margin * 2);
 
-      const widthScale = printableWidth / sourceCanvas.width;
-      const heightScale = printableHeight / sourceCanvas.height;
-      const scale = Math.min(widthScale, heightScale);
-      const imgWidthMm = sourceCanvas.width * scale;
-      const imgHeightMm = sourceCanvas.height * scale;
-      const x = (pageWidth - imgWidthMm) / 2;
-      const y = margin;
-      const imgData = sourceCanvas.toDataURL('image/jpeg', 0.95);
+      const imgWidthMm = printableWidth;
+      const mmPerPx = imgWidthMm / sourceCanvas.width;
+      const pageHeightPx = Math.max(1, Math.floor(printableHeight / mmPerPx));
 
-      pdf.addImage(imgData, 'JPEG', x, y, imgWidthMm, imgHeightMm, undefined, 'FAST');
+      let renderedHeightPx = 0;
+      let isFirstPage = true;
+
+      while (renderedHeightPx < sourceCanvas.height) {
+        const sliceHeightPx = Math.min(pageHeightPx, sourceCanvas.height - renderedHeightPx);
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = sourceCanvas.width;
+        pageCanvas.height = sliceHeightPx;
+
+        const pageCtx = pageCanvas.getContext('2d');
+        pageCtx.fillStyle = '#ffffff';
+        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pageCtx.drawImage(
+          sourceCanvas,
+          0, renderedHeightPx, sourceCanvas.width, sliceHeightPx,
+          0, 0, pageCanvas.width, pageCanvas.height
+        );
+
+        const imgHeightMm = sliceHeightPx * mmPerPx;
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+
+        if (!isFirstPage) {
+          pdf.addPage();
+        }
+
+        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidthMm, imgHeightMm, undefined, 'FAST');
+
+        renderedHeightPx += sliceHeightPx;
+        isFirstPage = false;
+      }
+
       pdfRender.innerHTML = '';
 
       const pdfBlob = pdf.output('blob');
