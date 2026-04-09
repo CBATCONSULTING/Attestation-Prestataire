@@ -334,51 +334,52 @@
       position: fixed;
       left: -99999px;
       top: 0;
-      width: 720px;
+      width: 680px;
       background: #fff;
       color: #111827;
-      padding: 16px;
+      padding: 10px 10px 14px;
       z-index: -1;
     }
 
     .pdf-doc {
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13px;
+      line-height: 1.35;
       color: #111827;
     }
 
     .pdf-doc h1 {
-      font-size: 22px;
-      margin: 0 0 4px;
+      font-size: 20px;
+      margin: 0 0 3px;
       color: #0f172a;
     }
 
     .pdf-doc .pdf-subtitle {
-      margin: 0 0 12px;
+      margin: 0 0 10px;
       color: #4b5563;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .pdf-doc .pdf-section {
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .pdf-doc .pdf-section-title {
-      font-size: 17px;
-      margin: 0 0 8px;
+      font-size: 15px;
+      margin: 0 0 6px;
       color: #0f172a;
     }
 
     .pdf-doc .pdf-block {
       border: 1px solid #d9dfeb;
       border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      overflow: hidden;
     }
 
     .pdf-doc .pdf-row {
-      margin: 0 0 4px;
+      margin: 0 0 3px;
     }
 
     .pdf-doc .pdf-label {
@@ -387,28 +388,30 @@
 
     .pdf-doc .pdf-declaration-list {
       margin: 0;
-      padding-left: 22px;
+      padding-left: 18px;
     }
 
     .pdf-doc .pdf-declaration-list li {
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .pdf-doc .pdf-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      font-size: 12.5px;
+      font-size: 11px;
+      line-height: 1.2;
     }
 
     .pdf-doc .pdf-table th,
     .pdf-doc .pdf-table td {
       border: 1px solid #d9dfeb;
-      padding: 8px;
+      padding: 5px 6px;
       text-align: left;
       vertical-align: top;
       word-break: break-word;
       overflow-wrap: anywhere;
+      white-space: normal;
     }
 
     .pdf-doc .pdf-table th {
@@ -416,22 +419,22 @@
     }
 
     .pdf-doc .pdf-table th:nth-child(1),
-    .pdf-doc .pdf-table td:nth-child(1) { width: 11%; }
+    .pdf-doc .pdf-table td:nth-child(1) { width: 13%; }
     .pdf-doc .pdf-table th:nth-child(2),
-    .pdf-doc .pdf-table td:nth-child(2) { width: 17%; }
+    .pdf-doc .pdf-table td:nth-child(2) { width: 14%; }
     .pdf-doc .pdf-table th:nth-child(3),
-    .pdf-doc .pdf-table td:nth-child(3) { width: 24%; }
+    .pdf-doc .pdf-table td:nth-child(3) { width: 19%; }
     .pdf-doc .pdf-table th:nth-child(4),
-    .pdf-doc .pdf-table td:nth-child(4) { width: 28%; }
+    .pdf-doc .pdf-table td:nth-child(4) { width: 30%; }
     .pdf-doc .pdf-table th:nth-child(5),
-    .pdf-doc .pdf-table td:nth-child(5) { width: 20%; }
+    .pdf-doc .pdf-table td:nth-child(5) { width: 24%; }
 
     .pdf-doc .pdf-signature-wrap {
-      margin-top: 8px;
+      margin-top: 6px;
       border: 1px solid #d9dfeb;
       border-radius: 12px;
-      padding: 8px;
-      min-height: 88px;
+      padding: 6px;
+      min-height: 74px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -439,12 +442,12 @@
 
     .pdf-doc .pdf-signature {
       max-width: 100%;
-      max-height: 90px;
+      max-height: 76px;
     }
 
     .pdf-doc .pdf-footer {
-      margin-top: 12px;
-      font-size: 12px;
+      margin-top: 8px;
+      font-size: 11px;
       color: #374151;
     }
 
@@ -512,7 +515,7 @@
   <div class="page">
     <div class="card">
       <div class="header">
-        <div class="eyebrow">Document à remplir et signer en ligne V5.0</div>
+        <div class="eyebrow">Document à remplir et signer en ligne V6.0</div>
         <h1>Attestation sur l'honneur du prestataire</h1>
         <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
       </div>
@@ -983,9 +986,9 @@
 
     async function paginatePdfSections(params, employees) {
       const pageWidthPx = pdfRender.clientWidth || 720;
-      const printableWidthMm = 190;
-      const printableHeightMm = 277;
-      const maxHeightPx = Math.floor(pageWidthPx * (printableHeightMm / printableWidthMm)) - 8;
+      const printableWidthMm = 194;
+      const printableHeightMm = 281;
+      const maxHeightPx = Math.floor(pageWidthPx * (printableHeightMm / printableWidthMm)) - 4;
 
       const header = buildPdfHeaderHtml();
       const signataire = buildPdfSignataireSection(params);
@@ -1101,7 +1104,7 @@
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const margin = 8;
       const printableWidth = pageWidth - (margin * 2);
       const printableHeight = pageHeight - (margin * 2);
 
@@ -1135,6 +1138,10 @@
         }
 
         pdf.addImage(imgData, 'JPEG', x, y, imgWidthMm, imgHeightMm, undefined, 'FAST');
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(107, 114, 128);
+        pdf.text(`${index + 1}/${pageSectionsList.length}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
       }
 
       pdfRender.innerHTML = '';
