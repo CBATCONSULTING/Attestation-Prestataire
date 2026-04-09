@@ -334,10 +334,10 @@
       position: fixed;
       left: -99999px;
       top: 0;
-      width: 760px;
+      width: 720px;
       background: #fff;
       color: #111827;
-      padding: 18px;
+      padding: 16px;
       z-index: -1;
     }
 
@@ -397,7 +397,8 @@
     .pdf-doc .pdf-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      table-layout: fixed;
+      font-size: 12.5px;
     }
 
     .pdf-doc .pdf-table th,
@@ -406,11 +407,24 @@
       padding: 8px;
       text-align: left;
       vertical-align: top;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     .pdf-doc .pdf-table th {
       background: #f8fafc;
     }
+
+    .pdf-doc .pdf-table th:nth-child(1),
+    .pdf-doc .pdf-table td:nth-child(1) { width: 11%; }
+    .pdf-doc .pdf-table th:nth-child(2),
+    .pdf-doc .pdf-table td:nth-child(2) { width: 17%; }
+    .pdf-doc .pdf-table th:nth-child(3),
+    .pdf-doc .pdf-table td:nth-child(3) { width: 24%; }
+    .pdf-doc .pdf-table th:nth-child(4),
+    .pdf-doc .pdf-table td:nth-child(4) { width: 28%; }
+    .pdf-doc .pdf-table th:nth-child(5),
+    .pdf-doc .pdf-table td:nth-child(5) { width: 20%; }
 
     .pdf-doc .pdf-signature-wrap {
       margin-top: 8px;
@@ -498,7 +512,7 @@
   <div class="page">
     <div class="card">
       <div class="header">
-        <div class="eyebrow">Document à remplir et signer en ligne V4.0</div>
+        <div class="eyebrow">Document à remplir et signer en ligne V5.0</div>
         <h1>Attestation sur l'honneur du prestataire</h1>
         <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
       </div>
@@ -826,69 +840,234 @@
         .slice(0, 50) || 'prestataire';
     }
 
-    function buildPdfHtml(params, employees) {
-      const employeesTable = buildEmployeesPdfTable(employees);
-      const salaryText = escapeHtml(params.salariesEtrangersTexte);
+    function buildPdfHeaderHtml() {
       return `
-        <div class="pdf-doc">
-          <h1>Attestation sur l'honneur du prestataire</h1>
-          <p class="pdf-subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
+        <h1>Attestation sur l'honneur du prestataire</h1>
+        <p class="pdf-subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
+      `;
+    }
 
-          <div class="pdf-section">
-            <h2 class="pdf-section-title">Signataire</h2>
-            <div class="pdf-block">
-              <p class="pdf-row"><span class="pdf-label">Nom / Prénom :</span> ${escapeHtml(params.nomPrenom)}</p>
-              <p class="pdf-row"><span class="pdf-label">Fonction :</span> ${escapeHtml(params.fonction)}</p>
-            </div>
+    function buildPdfSignataireSection(params) {
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Signataire</h2>
+          <div class="pdf-block">
+            <p class="pdf-row"><span class="pdf-label">Nom / Prénom :</span> ${escapeHtml(params.nomPrenom)}</p>
+            <p class="pdf-row"><span class="pdf-label">Fonction :</span> ${escapeHtml(params.fonction)}</p>
           </div>
-
-          <div class="pdf-section">
-            <h2 class="pdf-section-title">Entreprise</h2>
-            <div class="pdf-block">
-              <p class="pdf-row"><span class="pdf-label">Raison sociale :</span> ${escapeHtml(params.raisonSociale)}</p>
-              <p class="pdf-row"><span class="pdf-label">SIRET :</span> ${escapeHtml(params.siret)}</p>
-              <p class="pdf-row"><span class="pdf-label">Adresse :</span><br>${nl2br(params.adresse)}</p>
-            </div>
-          </div>
-
-          <div class="pdf-section">
-            <h2 class="pdf-section-title">Déclarations sur l'honneur</h2>
-            <div class="pdf-block">
-              <ol class="pdf-declaration-list">
-                <li>Est régulièrement immatriculée et exerce son activité conformément à la législation en vigueur.</li>
-                <li>Ne recourt pas au travail dissimulé au sens des articles L8221-1 et suivants du Code du travail.</li>
-                <li>Respecte les obligations relatives à l'emploi de travailleurs étrangers prévues par les articles L8251-1 et suivants du Code du travail.</li>
-                <li>Est à jour de ses obligations sociales auprès des organismes de recouvrement et s'engage à fournir l'attestation de vigilance délivrée par l'URSSAF.</li>
-                <li>Respecte les dispositions légales relatives au droit du travail, à la santé et à la sécurité des salariés.</li>
-                <li>Ne recourt pas au travail des enfants en violation de la législation applicable.</li>
-              </ol>
-            </div>
-          </div>
-
-          <div class="pdf-section">
-            <h2 class="pdf-section-title">Salariés étrangers soumis à autorisation de travail</h2>
-            <div class="pdf-block">
-              <p class="pdf-row">${salaryText}</p>
-              ${employeesTable}
-            </div>
-          </div>
-
-          <div class="pdf-section">
-            <h2 class="pdf-section-title">Finalisation</h2>
-            <div class="pdf-block">
-              <p class="pdf-row"><span class="pdf-label">Fait à :</span> ${escapeHtml(params.faitA)}</p>
-              <p class="pdf-row"><span class="pdf-label">Le :</span> ${escapeHtml(params.dateSignature)}</p>
-              <p class="pdf-row"><span class="pdf-label">Nom et qualité du signataire :</span> ${escapeHtml(params.nomQualite)}</p>
-              <p class="pdf-row pdf-label">Signature</p>
-              <div class="pdf-signature-wrap">
-                <img class="pdf-signature" src="${params.signature_image}" alt="Signature">
-              </div>
-            </div>
-          </div>
-
-          <p class="pdf-footer">La présente attestation est établie pour servir et valoir ce que de droit.</p>
         </div>
       `;
+    }
+
+    function buildPdfEntrepriseSection(params) {
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Entreprise</h2>
+          <div class="pdf-block">
+            <p class="pdf-row"><span class="pdf-label">Raison sociale :</span> ${escapeHtml(params.raisonSociale)}</p>
+            <p class="pdf-row"><span class="pdf-label">SIRET :</span> ${escapeHtml(params.siret)}</p>
+            <p class="pdf-row"><span class="pdf-label">Adresse :</span><br>${nl2br(params.adresse)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildPdfDeclarationsSection() {
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Déclarations sur l'honneur</h2>
+          <div class="pdf-block">
+            <ol class="pdf-declaration-list">
+              <li>Est régulièrement immatriculée et exerce son activité conformément à la législation en vigueur.</li>
+              <li>Ne recourt pas au travail dissimulé au sens des articles L8221-1 et suivants du Code du travail.</li>
+              <li>Respecte les obligations relatives à l'emploi de travailleurs étrangers prévues par les articles L8251-1 et suivants du Code du travail.</li>
+              <li>Est à jour de ses obligations sociales auprès des organismes de recouvrement et s'engage à fournir l'attestation de vigilance délivrée par l'URSSAF.</li>
+              <li>Respecte les dispositions légales relatives au droit du travail, à la santé et à la sécurité des salariés.</li>
+              <li>Ne recourt pas au travail des enfants en violation de la législation applicable.</li>
+            </ol>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildEmployeesPdfTable(employees) {
+      if (!employees.length) {
+        return '<p class="pdf-row">Aucun salarié étranger soumis à autorisation de travail déclaré.</p>';
+      }
+
+      const rows = employees.map(emp => `
+        <tr>
+          <td>${escapeHtml(emp.nom)}</td>
+          <td>${escapeHtml(emp.prenom)}</td>
+          <td>${escapeHtml(emp.nationalite)}</td>
+          <td>${escapeHtml(emp.titre)}</td>
+          <td>${escapeHtml(emp.numero)}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <table class="pdf-table">
+          <colgroup>
+            <col style="width:11%">
+            <col style="width:17%">
+            <col style="width:24%">
+            <col style="width:28%">
+            <col style="width:20%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Prénom</th>
+              <th>Nationalité</th>
+              <th>Type de titre</th>
+              <th>N° du titre</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function buildPdfEmployeeSection(params, employees, isContinuation = false) {
+      const sectionTitle = isContinuation
+        ? 'Salariés étrangers soumis à autorisation de travail - suite'
+        : 'Salariés étrangers soumis à autorisation de travail';
+
+      const introText = employees.length
+        ? (isContinuation ? 'Suite de la liste déclarée.' : escapeHtml(params.salariesEtrangersTexte))
+        : escapeHtml(params.salariesEtrangersTexte);
+
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">${sectionTitle}</h2>
+          <div class="pdf-block">
+            <p class="pdf-row">${introText}</p>
+            ${buildEmployeesPdfTable(employees)}
+          </div>
+        </div>
+      `;
+    }
+
+    function buildPdfFinalisationSection(params) {
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Finalisation</h2>
+          <div class="pdf-block">
+            <p class="pdf-row"><span class="pdf-label">Fait à :</span> ${escapeHtml(params.faitA)}</p>
+            <p class="pdf-row"><span class="pdf-label">Le :</span> ${escapeHtml(params.dateSignature)}</p>
+            <p class="pdf-row"><span class="pdf-label">Nom et qualité du signataire :</span> ${escapeHtml(params.nomQualite)}</p>
+            <p class="pdf-row pdf-label">Signature</p>
+            <div class="pdf-signature-wrap">
+              <img class="pdf-signature" src="${params.signature_image}" alt="Signature">
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function buildPdfFooterHtml() {
+      return '<p class="pdf-footer">La présente attestation est établie pour servir et valoir ce que de droit.</p>';
+    }
+
+    function buildPdfPageHtml(sections) {
+      return `<div class="pdf-doc">${sections.join('')}</div>`;
+    }
+
+    async function measurePdfPageHeight(sections) {
+      pdfRender.innerHTML = buildPdfPageHtml(sections);
+      await waitForImages(pdfRender);
+      const height = pdfRender.scrollHeight;
+      pdfRender.innerHTML = '';
+      return height;
+    }
+
+    async function paginatePdfSections(params, employees) {
+      const pageWidthPx = pdfRender.clientWidth || 720;
+      const printableWidthMm = 190;
+      const printableHeightMm = 277;
+      const maxHeightPx = Math.floor(pageWidthPx * (printableHeightMm / printableWidthMm)) - 8;
+
+      const header = buildPdfHeaderHtml();
+      const signataire = buildPdfSignataireSection(params);
+      const entreprise = buildPdfEntrepriseSection(params);
+      const declarations = buildPdfDeclarationsSection();
+      const finalisation = buildPdfFinalisationSection(params);
+      const footer = buildPdfFooterHtml();
+
+      if (!employees.length) {
+        const singlePage = [header, signataire, entreprise, declarations, buildPdfEmployeeSection(params, []), finalisation, footer];
+        if (await measurePdfPageHeight(singlePage) <= maxHeightPx) {
+          return [singlePage];
+        }
+        return [
+          [header, signataire, entreprise, declarations, buildPdfEmployeeSection(params, [])],
+          [header, finalisation, footer]
+        ];
+      }
+
+      const pages = [];
+      const remaining = employees.slice();
+      const firstPageBase = [header, signataire, entreprise, declarations];
+      let firstChunk = [];
+
+      while (remaining.length) {
+        const candidate = [...firstChunk, remaining[0]];
+        const height = await measurePdfPageHeight([...firstPageBase, buildPdfEmployeeSection(params, candidate)]);
+        if (height <= maxHeightPx) {
+          firstChunk.push(remaining.shift());
+        } else {
+          break;
+        }
+      }
+
+      if (!firstChunk.length) {
+        firstChunk.push(remaining.shift());
+      }
+
+      if (!remaining.length) {
+        const singlePage = [...firstPageBase, buildPdfEmployeeSection(params, firstChunk), finalisation, footer];
+        if (await measurePdfPageHeight(singlePage) <= maxHeightPx) {
+          return [singlePage];
+        }
+      }
+
+      pages.push([...firstPageBase, buildPdfEmployeeSection(params, firstChunk)]);
+
+      while (remaining.length) {
+        const finalCandidate = [header, buildPdfEmployeeSection(params, remaining, true), finalisation, footer];
+        if (await measurePdfPageHeight(finalCandidate) <= maxHeightPx) {
+          pages.push(finalCandidate);
+          remaining.length = 0;
+          break;
+        }
+
+        let chunk = [];
+        while (remaining.length) {
+          const candidate = [...chunk, remaining[0]];
+          const height = await measurePdfPageHeight([header, buildPdfEmployeeSection(params, candidate, true)]);
+          if (height <= maxHeightPx) {
+            chunk.push(remaining.shift());
+          } else {
+            break;
+          }
+        }
+
+        if (!chunk.length) {
+          chunk.push(remaining.shift());
+        }
+
+        pages.push([header, buildPdfEmployeeSection(params, chunk, true)]);
+      }
+
+      const lastPage = pages[pages.length - 1];
+      const lastPageWithFinal = [...lastPage, finalisation, footer];
+      if (await measurePdfPageHeight(lastPageWithFinal) <= maxHeightPx) {
+        pages[pages.length - 1] = lastPageWithFinal;
+      } else if (!lastPage.join('').includes('Finalisation')) {
+        pages.push([header, finalisation, footer]);
+      }
+
+      return pages;
     }
 
     function waitForImages(container) {
@@ -916,14 +1095,7 @@
         throw new Error('Les bibliothèques PDF ne sont pas chargées.');
       }
 
-      pdfRender.innerHTML = buildPdfHtml(params, employees);
-      await waitForImages(pdfRender);
-
-      const sourceCanvas = await window.html2canvas(pdfRender, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
+      const pageSectionsList = await paginatePdfSections(params, employees);
 
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -933,39 +1105,36 @@
       const printableWidth = pageWidth - (margin * 2);
       const printableHeight = pageHeight - (margin * 2);
 
-      const imgWidthMm = printableWidth;
-      const mmPerPx = imgWidthMm / sourceCanvas.width;
-      const pageHeightPx = Math.max(1, Math.floor(printableHeight / mmPerPx));
+      for (let index = 0; index < pageSectionsList.length; index += 1) {
+        pdfRender.innerHTML = buildPdfPageHtml(pageSectionsList[index]);
+        await waitForImages(pdfRender);
 
-      let renderedHeightPx = 0;
-      let isFirstPage = true;
+        const pageCanvas = await window.html2canvas(pdfRender, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          width: pdfRender.clientWidth,
+          windowWidth: pdfRender.scrollWidth
+        });
 
-      while (renderedHeightPx < sourceCanvas.height) {
-        const sliceHeightPx = Math.min(pageHeightPx, sourceCanvas.height - renderedHeightPx);
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = sourceCanvas.width;
-        pageCanvas.height = sliceHeightPx;
+        let imgWidthMm = printableWidth;
+        let imgHeightMm = pageCanvas.height * (imgWidthMm / pageCanvas.width);
 
-        const pageCtx = pageCanvas.getContext('2d');
-        pageCtx.fillStyle = '#ffffff';
-        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pageCtx.drawImage(
-          sourceCanvas,
-          0, renderedHeightPx, sourceCanvas.width, sliceHeightPx,
-          0, 0, pageCanvas.width, pageCanvas.height
-        );
+        if (imgHeightMm > printableHeight) {
+          const ratio = printableHeight / imgHeightMm;
+          imgWidthMm *= ratio;
+          imgHeightMm *= ratio;
+        }
 
-        const imgHeightMm = sliceHeightPx * mmPerPx;
+        const x = margin + ((printableWidth - imgWidthMm) / 2);
+        const y = margin;
         const imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
 
-        if (!isFirstPage) {
+        if (index > 0) {
           pdf.addPage();
         }
 
-        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidthMm, imgHeightMm, undefined, 'FAST');
-
-        renderedHeightPx += sliceHeightPx;
-        isFirstPage = false;
+        pdf.addImage(imgData, 'JPEG', x, y, imgWidthMm, imgHeightMm, undefined, 'FAST');
       }
 
       pdfRender.innerHTML = '';
