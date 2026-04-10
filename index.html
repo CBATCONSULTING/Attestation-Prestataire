@@ -209,7 +209,8 @@
       background: #fafbfd;
     }
 
-    .choice-card input[type="radio"] {
+    .choice-card input[type="radio"],
+    .choice-card input[type="checkbox"] {
       width: auto;
       margin-top: 2px;
       transform: scale(1.15);
@@ -517,7 +518,7 @@
   <div class="page">
     <div class="card">
       <div class="header">
-        <div class="eyebrow">Document à remplir et signer en ligne V13.0</div>
+        <div class="eyebrow">Document à remplir et signer en ligne V14.0</div>
         <h1>Attestation sur l'honneur du prestataire</h1>
         <p class="subtitle">Articles L8222-1, L8254-1 et D8254-2 du Code du travail</p>
       </div>
@@ -570,7 +571,18 @@
           </section>
 
           <section class="section">
-            <h2>4. Salariés étrangers soumis à autorisation de travail</h2>
+            <h2>4. Confirmation complémentaire</h2>
+            <label class="choice-card" for="fausseDeclarationAck">
+              <input id="fausseDeclarationAck" name="fausseDeclarationAck" type="checkbox" required />
+              <span>
+                <strong>Je confirme cette déclaration</strong>
+                Je suis informé(e) que toute fausse déclaration m’expose à des sanctions pénales conformément aux dispositions des articles 441-1 et suivants du Code pénal.
+              </span>
+            </label>
+          </section>
+
+          <section class="section">
+            <h2>5. Salariés étrangers soumis à autorisation de travail</h2>
             <div class="choice-group">
               <label class="choice-card">
                 <input type="radio" name="salariesEtrangers" value="non" checked />
@@ -612,7 +624,7 @@
           </section>
 
           <section class="section">
-            <h2>5. Finalisation</h2>
+            <h2>6. Finalisation</h2>
             <div class="grid-3">
               <div class="field">
                 <label for="faitA">Fait à</label>
@@ -924,6 +936,17 @@
       `;
     }
 
+    function buildPdfAcknowledgementSection() {
+      return `
+        <div class="pdf-section">
+          <h2 class="pdf-section-title">Confirmation complémentaire</h2>
+          <div class="pdf-block">
+            <p class="pdf-row">☑ Je suis informé(e) que toute fausse déclaration m’expose à des sanctions pénales conformément aux dispositions des articles 441-1 et suivants du Code pénal.</p>
+          </div>
+        </div>
+      `;
+    }
+
     function buildEmployeesPdfTable(employees) {
       if (!employees.length) {
         return '<p class="pdf-row">Aucun salarié étranger soumis à autorisation de travail déclaré.</p>';
@@ -1025,23 +1048,24 @@
       const signataire = buildPdfSignataireSection(params);
       const entreprise = buildPdfEntrepriseSection(params);
       const declarations = buildPdfDeclarationsSection();
+      const acknowledgement = buildPdfAcknowledgementSection();
       const finalisation = buildPdfFinalisationSection(params);
       const footer = buildPdfFooterHtml();
 
       if (!employees.length) {
-        const singlePage = [header, signataire, entreprise, declarations, buildPdfEmployeeSection(params, []), finalisation, footer];
+        const singlePage = [header, signataire, entreprise, declarations, acknowledgement, buildPdfEmployeeSection(params, []), finalisation, footer];
         if (await measurePdfPageHeight(singlePage) <= maxHeightPx) {
           return [singlePage];
         }
         return [
-          [header, signataire, entreprise, declarations, buildPdfEmployeeSection(params, [])],
+          [header, signataire, entreprise, declarations, acknowledgement, buildPdfEmployeeSection(params, [])],
           [header, finalisation, footer]
         ];
       }
 
       const pages = [];
       const remaining = employees.slice();
-      const firstPageBase = [header, signataire, entreprise, declarations];
+      const firstPageBase = [header, signataire, entreprise, declarations, acknowledgement];
       let firstChunk = [];
 
       while (remaining.length) {
@@ -1198,6 +1222,7 @@
           ? "L'entreprise emploie des salariés étrangers soumis à autorisation de travail."
           : "L'entreprise n'emploie pas de salariés étrangers soumis à autorisation de travail.",
         employeesHtml: buildEmployeesHtml(employees),
+        falseDeclarationAck: fd.get('fausseDeclarationAck') ? 'Oui' : 'Non',
         faitA: (fd.get('faitA') || '').trim(),
         dateSignature: formatDateFr(fd.get('dateSignature') || ''),
         nomQualite: (fd.get('nomQualite') || '').trim(),
